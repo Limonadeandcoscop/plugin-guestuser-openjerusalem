@@ -40,8 +40,19 @@ class GuestUser_UserController extends Omeka_Controller_AbstractActionController
         }
         $user->setPassword($_POST['new_password']);
         $user->setPostData($_POST);
+        $user->name = $_POST['firstname']. ' '.$_POST['name'];
         try {
             if ($user->save()) {
+
+                $infos = new GuestUserInfo;
+                $infos->user_id     = $user->id;
+                $infos->gender      = $_POST['gender'];
+                $infos->firstname   = $_POST['firstname'];
+                $infos->lastname    = $_POST['name'];
+                $infos->profession   = $_POST['profession'];
+                $infos->institution    = $_POST['institution'];
+                $infos->save();
+
                 $token = $this->_createToken($user);
                 $this->_sendConfirmationEmail($user, $token); //confirms that they registration request is legit
                 if($instantAccess) {
@@ -86,6 +97,9 @@ class GuestUser_UserController extends Omeka_Controller_AbstractActionController
     {
         $user = current_user();
 
+        $userInfos = get_db()->getTable("GuestUserInfo")->findBy(array('user_id' => $user->id));
+        $user->name = $userInfos[0]->lastname;
+
         $form = $this->_getForm(array('user'=>$user));
         $form->getElement('new_password')->setLabel(__("New Password"));
         $form->getElement('new_password')->setRequired(false);
@@ -114,10 +128,20 @@ class GuestUser_UserController extends Omeka_Controller_AbstractActionController
             return;
         }
 
-        $user->setPassword($_POST['new_password']);
+        if (strlen(trim($_POST['new_password'])) && strlen(trim($_POST['new_password_confirm'])) && ($_POST['new_password'] == $_POST['new_password_confirm']) )
+            $user->setPassword($_POST['new_password']);
+
         $user->setPostData($_POST);
+        $user->name = $_POST['firstname']. ' '.$_POST['name'];
         try {
             $user->save($_POST);
+            $userInfos[0]->gender      = $_POST['gender'];
+            $userInfos[0]->firstname   = $_POST['firstname'];
+            $userInfos[0]->lastname    = $_POST['name'];
+            $userInfos[0]->profession  = $_POST['profession'];
+            $userInfos[0]->institution = $_POST['institution'];
+            $userInfos[0]->save();
+
         } catch (Omeka_Validator_Exception $e) {
             $this->flashValidationErrors($e);
         }
@@ -166,9 +190,10 @@ class GuestUser_UserController extends Omeka_Controller_AbstractActionController
 
     protected function _getForm($options)
     {
-        $form = new Omeka_Form_User($options);
+        $form = new Oj_User_Form($options);
         //need to remove submit so I can add in new elements
         $form->removeElement('submit');
+
         $form->addElement('password', 'new_password',
             array(
                     'label'         => __('Password'),
@@ -205,7 +230,7 @@ class GuestUser_UserController extends Omeka_Controller_AbstractActionController
         );
         $form->addElement('password', 'new_password_confirm',
                         array(
-                                'label'         => __('Password again for match'),
+                                'label'         => __('Confirm password'),
                                 'required'      => true,
                                 'class'         => 'textinput',
                                 'errorMessages' => array(__('New password must be typed correctly twice.'))
@@ -220,11 +245,34 @@ class GuestUser_UserController extends Omeka_Controller_AbstractActionController
                 'captcha' => Omeka_Captcha::getCaptcha()
             ));
         }
+
+        if (current_user())
+            $userInfos = get_db()->getTable("GuestUserInfo")->findBy(array('user_id' => current_user()->id));
+
+        $profession = isset($userInfos[0]->profession) ? $userInfos[0]->profession : '';
+        $form->addElement('text', 'profession', array(
+            'label' => __('Profession'),
+            'size' => '50',
+            'value' => $profession,
+            'required' => false,
+
+        ));
+
+        $institution = isset($userInfos[0]->institution) ? $userInfos[0]->institution : '';
+        $form->addElement('text', 'institution', array(
+            'label' => __('Institution/society'),
+            'size' => '50',
+            'value' => $institution,
+            'required' => false,
+
+        ));
+
         if (current_user()) {
             $submitLabel = __('Update');
         } else {
             $submitLabel = get_option('guest_user_register_text') ? get_option('guest_user_register_text') : __('Register');
         }
+
         $form->addElement('submit', 'submit', array('label' => $submitLabel));
         return $form;
     }

@@ -1,7 +1,7 @@
 <?php
 
 define('GUEST_USER_PLUGIN_DIR', PLUGIN_DIR . '/GuestUser');
-include(FORM_DIR . '/User.php');
+include(GUEST_USER_PLUGIN_DIR . '/OjUserForm.php');
 
 
 class GuestUserPlugin extends Omeka_Plugin_AbstractPlugin
@@ -16,6 +16,7 @@ class GuestUserPlugin extends Omeka_Plugin_AbstractPlugin
         'config',
         'config_form',
         'before_save_user',
+        'before_delete_user',
         'initialize',
         'users_browse_sql'
     );
@@ -53,6 +54,20 @@ class GuestUserPlugin extends Omeka_Plugin_AbstractPlugin
                   `email` tinytext COLLATE utf8_unicode_ci NOT NULL,
                   `created` datetime NOT NULL,
                   `confirmed` tinyint(1) DEFAULT '0',
+                  PRIMARY KEY (`id`)
+                ) ENGINE=MyISAM CHARSET=utf8 COLLATE=utf8_unicode_ci;
+                ";
+
+        $db->query($sql);
+
+        $sql = "CREATE TABLE IF NOT EXISTS `$db->GuestUserInfos` (
+                  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+                  `user_id` int NOT NULL,
+                  `gender` tinytext COLLATE utf8_unicode_ci NOT NULL,
+                  `firstname` tinytext COLLATE utf8_unicode_ci NOT NULL,
+                  `lastname` tinytext COLLATE utf8_unicode_ci NOT NULL,
+                  `profession` tinytext COLLATE utf8_unicode_ci,
+                  `institution` tinytext COLLATE utf8_unicode_ci,
                   PRIMARY KEY (`id`)
                 ) ENGINE=MyISAM CHARSET=utf8 COLLATE=utf8_unicode_ci;
                 ";
@@ -154,6 +169,15 @@ class GuestUserPlugin extends Omeka_Plugin_AbstractPlugin
                     _log($e);
                 }
             }
+        }
+    }
+
+    public function hookBeforeDeleteUser($args)
+    {
+        $record = $args['record'];
+        if($record->exists()) {
+            $dbUser = get_db()->getTable('User')->find($record->id);
+            $userInfos = get_db()->getTable("GuestUserInfo")->findBy(array('user_id' => $user->id));
         }
     }
 
@@ -263,7 +287,7 @@ class GuestUserPlugin extends Omeka_Plugin_AbstractPlugin
         $mail->addHeader('X-Mailer', 'PHP/' . phpversion());
         $mail->send();
     }
-    
+
     public static function guestUserWidget($widget)
     {
         if(is_array($widget)) {
