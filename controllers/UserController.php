@@ -267,6 +267,14 @@ class GuestUser_UserController extends Omeka_Controller_AbstractActionController
 
         ));
 
+        $form->addDisplayGroup(array('profession', 'institution'), 'additionnal');
+        $group = $form->getDisplayGroup('additionnal');
+
+        $group->setDecorators(array(
+           'FormElements',
+           array('HtmlTag', array('tag' => 'div', 'class' => 'additionnal'))
+        ));  
+
         if (current_user()) {
             $submitLabel = __('Update');
         } else {
