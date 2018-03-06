@@ -298,6 +298,34 @@ class GuestUserPlugin extends Omeka_Plugin_AbstractPlugin
         return $widget;
     }
     }
+
+
+    public static function getUserProfession($user) {
+
+        if (!$user) return;
+
+        $userInfos = get_db()->getTable("GuestUserInfo")->findBy(array('user_id' => $user->id));
+
+        if (isset($userInfos[0]) && get_class($userInfos[0]) == 'GuestUserInfo') {
+            return $userInfos[0]->profession;
+        }
+
+        return false;
+    }
+
+
+    public static function getUserInstitution($user) {
+
+        if (!$user) return;
+
+        $userInfos = get_db()->getTable("GuestUserInfo")->findBy(array('user_id' => $user->id));
+
+        if (isset($userInfos[0]) && get_class($userInfos[0]) == 'GuestUserInfo') {
+            return $userInfos[0]->institution;
+        }
+
+        return false;
+    }    
 }
 
 ?>
