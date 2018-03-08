@@ -207,5 +207,3 @@ class Oj_User_Form extends Omeka_Form
     }
 }
 ?>
-
-
