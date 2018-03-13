@@ -172,14 +172,21 @@ class GuestUserPlugin extends Omeka_Plugin_AbstractPlugin
         }
     }
 
+
     public function hookBeforeDeleteUser($args)
     {
         $record = $args['record'];
         if($record->exists()) {
             $dbUser = get_db()->getTable('User')->find($record->id);
-            $userInfos = get_db()->getTable("GuestUserInfo")->findBy(array('user_id' => $user->id));
+            if(isset($dbUser)) {
+                $userInfos = get_db()->getTable("GuestUserInfo")->findBy(array('user_id' => $dbUser->id));
+                if(isset($userInfos) && isset($userInfos[0]->id)) {
+                    $userInfos[0]->delete();
+                }
+            }
         }
     }
+
 
     public function hookUsersBrowseSql($args)
     {
