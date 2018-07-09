@@ -313,7 +313,7 @@ class GuestUser_UserController extends Omeka_Controller_AbstractActionController
         $url = WEB_ROOT . '/guest-user/user/confirm/token/' . $token->token;
         $siteUrl = absolute_url('/');
         $subject = __("Your Open Jerusalem Account");
-        $body  = __("Thank you for registering an online account with the Open Jerusalem website.<br /><br />Please click the following link to confirm your account:<br /> $url<br /><br />");
+        $body  = __("Thank you for registering an online account with the Open Jerusalem website.<br /><br />Please click the following link to confirm your account:<br /><a href='$url'>$url</a><br /><br />");
         $body .= __("Your username is: ".$user->username."<br />");
         $body .= __("Your password is: ".$password."<br /><br />");
         $body .= __("If you have any questions or encounter any problems, please email contact@openjerusalem.org.<br /><br />");
