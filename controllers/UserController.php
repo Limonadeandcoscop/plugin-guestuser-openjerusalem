@@ -233,7 +233,7 @@ class GuestUser_UserController extends Omeka_Controller_AbstractActionController
                                 'label'         => __('Confirm password'),
                                 'required'      => true,
                                 'class'         => 'textinput',
-                                'errorMessages' => array(__('New password must be typed correctly twice.'))
+                                'errorMessages' => array(__('Both entered passwords must match.'))
                         )
         );
         if(Omeka_Captcha::isConfigured() && (get_option('guest_user_recaptcha') == 1)) {

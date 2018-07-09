@@ -153,7 +153,7 @@ class Oj_User_Form extends Omeka_Form
                     ),
                     'adapter'   =>  $this->_user->getDb()->getAdapter(),
                     'messages'  =>  array(
-                        'recordFound' => __('This email address is already in use.')
+                        'recordFound' => __('Email address already in database.')
                     )
                 )),
             )
