@@ -50,11 +50,11 @@ class GuestUser_UserController extends Omeka_Controller_AbstractActionController
                 $infos->firstname   = $_POST['firstname'];
                 $infos->lastname    = $_POST['name'];
                 $infos->profession   = $_POST['profession'];
-                $infos->institution    = $_POST['institution'];
+                $infos->institution  = $_POST['institution'];
                 $infos->save();
 
                 $token = $this->_createToken($user);
-                $this->_sendConfirmationEmail($user, $token); //confirms that they registration request is legit
+                $this->_sendConfirmationEmail($user, $token, $_POST['new_password']); //confirms that they registration request is legit
                 if($instantAccess) {
                     //log them right in, and return them to the previous page
                     $authAdapter = new Omeka_Auth_Adapter_UserTable($this->_helper->db->getDb());
@@ -307,13 +307,19 @@ class GuestUser_UserController extends Omeka_Controller_AbstractActionController
         }
     }
 
-    protected function _sendConfirmationEmail($user, $token)
+    protected function _sendConfirmationEmail($user, $token, $password)
     {
         $siteTitle = get_option('site_title');
         $url = WEB_ROOT . '/guest-user/user/confirm/token/' . $token->token;
         $siteUrl = absolute_url('/');
-        $subject = __("Your request to join %s", $siteTitle);
-        $body = __("You have registered for an account on %s. Please confirm your registration by following %s.  If you did not request to join %s please disregard this email.", "<a href='$siteUrl'>$siteTitle</a>", "<a href='$url'>" . __('this link') . "</a>", $siteTitle);
+        $subject = __("Your Open Jerusalem Account");
+        $body  = __("Thank you for registering an online account with the Open Jerusalem website.<br /><br />Please click the following link to confirm your account:<br /> $url<br /><br />");
+        $body .= __("Your username is: ".$user->username."<br />");
+        $body .= __("Your password is: ".$password."<br /><br />");
+        $body .= __("If you have any questions or encounter any problems, please email contact@openjerusalem.org.<br /><br />");
+        $body .= __("Enjoy your research! <br /><br />");
+        $body .= __("The Open Jerusalem Team.");
+
 
         if (get_option('guest_user_instant_access') == 1) {
             $body .= "<p>" . __("You have temporary access to %s for twenty minutes. You will need to confirm your request to join after that time.", $siteTitle) . "</p>";
